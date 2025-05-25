@@ -1,0 +1,35 @@
+---
+description: 
+globs: tests/**/*.py
+alwaysApply: false
+---
+# テスト開発ガイドライン
+
+## TDDの原則
+1. Red: 失敗するテストを書く
+2. Green: テストを通す最小限のコードを書く
+3. Refactor: コードを改善する
+
+## テストの命名規則
+- test_[機能]_[条件]_[期待結果]
+- 例: test_create_product_with_valid_data_returns_201
+
+## テストの構造
+```python
+def test_example():
+    # Arrange: 準備
+    
+    # Act: 実行
+    
+    # Assert: 検証
+```
+
+## インポート方法
+```python
+# context.pyを使用したインポート
+from .context import product_api
+```
+
+## カバレッジ目標
+- 最低80%のカバレッジを維持
+- 重要なビジネスロジックは100%カバー
