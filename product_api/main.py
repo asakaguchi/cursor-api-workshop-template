@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from .models import ProductResponse
+from fastapi import FastAPI, HTTPException, status
+from .models import ProductCreate, ProductResponse
+from .storage import storage
 
 app = FastAPI(
     title="商品管理API",
@@ -17,4 +18,32 @@ async def root():
 @app.get("/health")
 async def health_check():
     """ヘルスチェック"""
-    return {"status": "healthy"} 
+    return {"status": "healthy"}
+
+
+@app.post("/items", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def create_product(product_data: ProductCreate):
+    """商品を作成する
+    
+    Args:
+        product_data: 商品作成データ
+        
+    Returns:
+        作成された商品情報
+        
+    Raises:
+        HTTPException: バリデーションエラーの場合
+    """
+    try:
+        product = storage.create_product(product_data)
+        return ProductResponse(
+            id=product.id,
+            name=product.name,
+            price=product.price,
+            created_at=product.created_at
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"商品の作成に失敗しました: {str(e)}"
+        ) 
