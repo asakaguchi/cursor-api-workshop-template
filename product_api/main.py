@@ -46,4 +46,32 @@ async def create_product(product_data: ProductCreate):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"商品の作成に失敗しました: {str(e)}"
-        ) 
+        )
+
+
+@app.get("/items/{product_id}", response_model=ProductResponse)
+async def get_product(product_id: int):
+    """指定されたIDの商品を取得する
+    
+    Args:
+        product_id: 商品ID
+        
+    Returns:
+        商品情報
+        
+    Raises:
+        HTTPException: 商品が見つからない場合（404）
+    """
+    product = storage.get_product(product_id)
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"商品ID {product_id} が見つかりません"
+        )
+    
+    return ProductResponse(
+        id=product.id,
+        name=product.name,
+        price=product.price,
+        created_at=product.created_at
+    ) 
