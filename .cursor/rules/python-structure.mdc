@@ -1,0 +1,100 @@
+---
+description: 
+globs: **/*.py,**/pyproject.toml
+alwaysApply: false
+---
+# Pythonプロジェクト構造ガイドライン
+
+## 推奨構造
+
+The Hitchhiker's Guide to Python（https://docs.python-guide.org/writing/structure/）に基づく構造を採用します。
+
+### 基本構造
+```
+product-api/
+├── product_api/      # アプリケーションコード（srcではなくプロジェクト名）
+│   ├── __init__.py
+│   ├── main.py      # エントリーポイント
+│   ├── models.py    # データモデル
+│   └── storage.py   # ビジネスロジック
+├── tests/           # テストコード
+│   ├── __init__.py
+│   ├── context.py   # インポート用のヘルパー
+│   └── test_*.py
+├── docs/            # ドキュメント
+├── scripts/         # ユーティリティスクリプト
+├── .gitignore
+├── pyproject.toml   # プロジェクト設定（またはsetup.py）
+├── requirements.txt # 開発依存関係（オプション）
+├── LICENSE          # ライセンスファイル
+└── README.md
+```
+
+## なぜこの構造？
+
+### プロジェクトルートに直接モジュールを配置
+- The Hitchhiker's Guide to Pythonでは、srcやpythonのような曖昧なサブディレクトリは推奨されません
+- モジュールは`./product_api/`のようにプロジェクトルートに直接配置します
+- 単一ファイルの場合は`./product_api.py`として配置可能です
+
+### tests/context.pyの役割
+- テストがパッケージを確実にインポートできるようにする
+- `setup.py develop`の実行を要求しない
+- 開発中のコードベースを簡単にテストできる
+
+### 命名規則
+- モジュール名：短く、lowercase、特殊記号（.や?）を避ける
+- パッケージ名：プロジェクト名と一致させる（product-api → product_api）
+- ファイル名：`my.spam.py`のような形式は避ける（Pythonのモジュール検索に干渉）
+- クラス名：CapWords
+- 関数名：lowercase_with_underscores
+- 定数：UPPERCASE_WITH_UNDERSCORES
+
+## インポートの順序
+```python
+# 1. 標準ライブラリ
+import os
+import sys
+
+# 2. サードパーティライブラリ
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+# 3. ローカルアプリケーション
+from product_api.models import Product
+from product_api.storage import InMemoryStorage
+```
+
+## テストのインポート方法
+
+tests/context.pyを作成：
+```python
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import product_api
+```
+
+各テストファイルで：
+```python
+from .context import product_api
+```
+
+## 実践例
+
+良い例：
+```python
+# product_api/models.py
+class ProductModel(BaseModel):
+    """商品データモデル"""
+    product_name: str
+    unit_price: float
+```
+
+避けるべき例：
+```python
+# models.py（product_apiの外）
+class product_model:  # クラス名が小文字
+    ProductName: str  # 変数名が大文字始まり
+```
